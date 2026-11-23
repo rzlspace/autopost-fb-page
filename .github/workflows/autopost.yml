@@ -1,1 +1,35 @@
 
+name: Auto-Post FB Page Tiap Jam (07.00-21.00 WIB)
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  autopost-fb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cek jam WIB (07.00 - 21.00)
+        run: |
+          HOUR=$(TZ="Asia/Jakarta" date +%H)
+          if [ "$HOUR" -lt 07 ] || [ "$HOUR" -gt 21 ]; then
+            echo "Di luar jam 07.00 - 21.00 WIB (jam: $HOUR). Skip."
+            exit 0
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Jalankan auto-post FB Page
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: python autopost_fb_page.py
